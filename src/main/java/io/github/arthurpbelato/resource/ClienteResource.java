@@ -1,15 +1,17 @@
 package io.github.arthurpbelato.resource;
 
-import ch.qos.logback.core.net.server.Client;
 import io.github.arthurpbelato.model.Cliente;
 import io.github.arthurpbelato.repository.ClienteRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.html.Option;
 import javax.validation.Valid;
 import java.math.BigInteger;
 import java.net.URI;
@@ -50,5 +52,16 @@ public class ClienteResource {
         clienteRepository.deleteById(codigo);
     }
 
+    @PutMapping("/{codigo}")
+    public ResponseEntity<Cliente> atualizar(@PathVariable BigInteger codigo, @RequestBody @Valid Cliente cliente){
+        Optional<Cliente> clienteOptional = clienteRepository.findById(codigo);
+        if(!clienteOptional.isPresent()){
+            return ResponseEntity.notFound().build();
+        }
+        Cliente clienteExistente = clienteOptional.get();
+        BeanUtils.copyProperties(cliente, clienteExistente, "codigo");
+        clienteRepository.save(clienteExistente);
+        return ResponseEntity.ok(clienteExistente);
+    }
 
 }
